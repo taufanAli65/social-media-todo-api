@@ -13,3 +13,4 @@ yarn-error.log*
 .vscode/
 *.sublime-project
 *.sublime-workspace
+firebase-config.json
