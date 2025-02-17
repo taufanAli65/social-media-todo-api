@@ -1,0 +1,31 @@
+{
+  "name": "social-media-todo-api",
+  "version": "1.0.0",
+  "description": "A simple CRUD API for managing to-do list posts on social media. The API allows you to create, read, update, and delete tasks related to social media posts, including fields like Post Title, Brand, Platform, Due Date, Payment, and Status.",
+  "main": "app.js",
+  "scripts": {
+    "test": "jest",
+    "start": "node ./api/app.js",
+    "start-dev": "nodemon ./api/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taufanAli65/social-media-todo-api.git"
+  },
+  "keywords": [
+    "REST",
+    "API"
+  ],
+  "author": "taufanAli65",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/taufanAli65/social-media-todo-api/issues"
+  },
+  "homepage": "https://github.com/taufanAli65/social-media-todo-api#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "nodemon": "^3.1.9"
+  }
+}
