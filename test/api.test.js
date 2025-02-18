@@ -46,29 +46,25 @@ describe("POST /auth/register", () => {
 
 describe("POST /auth/login", () => {
   it("should login an admin user", async () => {
-    const response = await axios.post(
-      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.API_KEY}`,
-      {
+    const response = await request(app)
+      .post("/auth/login")
+      .send({
         email: process.env.ADMIN_EMAIL,
-        password: process.env.ADMIN_PASSWORD,
-        returnSecureToken: true
-      }
-    );
+        password: process.env.ADMIN_PASSWORD
+      });
     expect(response.status).toBe(200);
-    expect(response.data).toHaveProperty("idToken");
+    expect(response.body).toHaveProperty("idToken");
   });
 });
 
 afterAll(async () => {
-  const response = await axios.post(
-    `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.API_KEY}`,
-    {
-      email: process.env.ADMIN_EMAIL,
-      password: process.env.ADMIN_PASSWORD,
-      returnSecureToken: true
-    }
-  );
-  const idToken = response.data.idToken;
+  const response = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+  const idToken = response.body.idToken;
 
   await request(app)
     .post(`/auth/delete/${createdUserID}`)

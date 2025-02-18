@@ -8,6 +8,7 @@ app.use(cors()); //Allow all connection to the server, add the frontend link her
 
 const authRouter = require("./routes/auth");
 
+app.use(express.json());
 app.use("/auth", authRouter);
 
 app.listen(PORT, () => {
