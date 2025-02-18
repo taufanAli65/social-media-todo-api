@@ -169,6 +169,23 @@ describe("POST /assign/:contentID/:userID", () => {
     expect(response.status).toBe(404);
     expect(response.body.status).toBe("Content not found");
   });
+
+  it("should return an error if user is already assigned", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+    
+    const response = await request(app)
+      .post(`/content/assign/${contentID}/${createdUserID}`)
+      .set("Authorization", `Bearer ${idToken}`);
+    expect(response.status).toBe(400);
+    expect(response.body.status).toBe("User or Content already assigned");
+  });
+  
 });
 
 afterAll(async () => {

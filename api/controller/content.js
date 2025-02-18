@@ -51,12 +51,15 @@ async function assignContent(req, res) {
   try {
     const { userID, contentID } = req.params;
     const userDoc = await db.collection("users").doc(userID).get();
+    const contentDoc = await db.collection("contents").doc(contentID).get();
     if (!userDoc.exists) {
       return res.status(404).json({ status: "User not found" });
     }
-    const contentDoc = await db.collection("contents").doc(contentID).get();
-    if (!contentDoc.exists) {
+    else if (!contentDoc.exists) {
       return res.status(404).json({ status: "Content not found" });
+    }
+    else if (userDoc.data().assigned || contentDoc.data().assigned) {
+      return res.status(400).json({ status: "User or Content already assigned" });
     }
     await db.collection("contents").doc(contentID).set(
       {
