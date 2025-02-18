@@ -2,7 +2,6 @@ const { db } = require("../firebase-config");
 
 async function verifyRoles(req, res, next) {
   try {
-    console.log(req.user.uid);
     const user = (await db.collection("users").doc(req.user.uid).get()).data();
     const userRoles = user.roles;
     if (!userRoles) {

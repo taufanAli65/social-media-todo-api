@@ -1,14 +1,14 @@
 const request = require("supertest");
 const express = require("express");
-const bodyParser = require("body-parser");
 const authRouter = require("../api/routes/auth");
-const axios = require("axios");
-const {db} = require("../api/firebase-config");
+const contentRouter = require("../api/routes/content");
+const { db } = require("../api/firebase-config");
 require("dotenv").config();
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
 app.use("/auth", authRouter);
+app.use("/content", contentRouter);
 
 let createdUserID;
 
@@ -57,6 +57,68 @@ describe("POST /auth/login", () => {
   });
 });
 
+describe("GET /content", () => {
+  it("should get all contents", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .get("/content")
+      .set("Authorization", `Bearer ${idToken}`);
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe("Success");
+    expect(response.body.contents).toBeInstanceOf(Array);
+  });
+});
+
+describe("POST /content", () => {
+  it("should add new content", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const newContent = {
+      title: "New Content",
+      brand: "Brand A",
+      platform: "Platform X",
+      payment: 100
+    };
+    const response = await request(app)
+      .post("/content")
+      .set("Authorization", `Bearer ${idToken}`)
+      .send(newContent);
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe("Success");
+    expect(response.body.content).toMatchObject(newContent);
+  });
+
+  it("should return an error if required fields are missing", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .post("/content")
+      .set("Authorization", `Bearer ${idToken}`)
+      .send({ title: "Incomplete Content" });
+    expect(response.status).toBe(500);
+    expect(response.body.status).toBe("Internal Server Error");
+  });
+});
+
 afterAll(async () => {
   const response = await request(app)
       .post("/auth/login")
@@ -70,4 +132,10 @@ afterAll(async () => {
     .post(`/auth/delete/${createdUserID}`)
     .set("Authorization", `Bearer ${idToken}`)
     .send();
+
+    const contents = db.collection("contents");
+    const snapshot = await contents.get();
+    snapshot.forEach(async (doc) => {
+        await doc.ref.delete();
+    }); // delete entire collection
 });
