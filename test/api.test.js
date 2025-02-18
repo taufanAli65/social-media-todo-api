@@ -169,9 +169,6 @@ afterAll(async () => {
     .set("Authorization", `Bearer ${idToken}`)
     .send();
 
-    const contents = db.collection("contents");
-    const snapshot = await contents.get();
-    snapshot.forEach(async (doc) => {
-        await doc.ref.delete();
-    }); // delete entire collection
+    const contents = db.collection("contents").doc(contentID);
+    await contents.delete();
 });
