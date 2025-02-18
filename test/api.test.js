@@ -146,8 +146,12 @@ describe("POST /assign/:contentID/:userID", () => {
       });
     const idToken = loginResponse.body.idToken;
     const response = await request(app)
-      .post(`/content/assign/${contentID}/${createdUserID}`)
-      .set("Authorization", `Bearer ${idToken}`);
+      .post(`/content/assign`)
+      .set("Authorization", `Bearer ${idToken}`)
+      .send({
+        userID: createdUserID,
+        contentID: contentID
+      });
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("Success");
     expect(response.body.message).toContain("Content successfully assigned");
@@ -163,8 +167,12 @@ describe("POST /assign/:contentID/:userID", () => {
     const idToken = loginResponse.body.idToken;
 
     const response = await request(app)
-      .post(`/content/assign/${contentID}/nonexistentUserID`)
-      .set("Authorization", `Bearer ${idToken}`);
+      .post(`/content/assign`)
+      .set("Authorization", `Bearer ${idToken}`)
+      .send({
+        userID: createdUserID,
+        contentID: "nonexistentUserID"
+      });
     expect(response.status).toBe(404);
     expect(response.body.status).toBe("User not found");
   });
@@ -179,8 +187,12 @@ describe("POST /assign/:contentID/:userID", () => {
     const idToken = loginResponse.body.idToken;
 
     const response = await request(app)
-      .post(`/content/assign/nonexistentContentID/${createdUserID}`)
-      .set("Authorization", `Bearer ${idToken}`);
+      .post(`/content/assign`)
+      .set("Authorization", `Bearer ${idToken}`)
+      .send({
+        userID: createdUserID,
+        contentID: "nonexistentContentID"
+      });;
     expect(response.status).toBe(404);
     expect(response.body.status).toBe("Content not found");
   });
@@ -195,8 +207,12 @@ describe("POST /assign/:contentID/:userID", () => {
     const idToken = loginResponse.body.idToken;
     
     const response = await request(app)
-      .post(`/content/assign/${contentID}/${createdUserID}`)
-      .set("Authorization", `Bearer ${idToken}`);
+      .post(`/content/assign`)
+      .set("Authorization", `Bearer ${idToken}`)
+      .send({
+        userID: createdUserID,
+        contentID: contentID
+      });;
     expect(response.status).toBe(400);
     expect(response.body.status).toBe("User or Content already assigned");
   });

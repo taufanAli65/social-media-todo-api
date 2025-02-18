@@ -62,7 +62,7 @@ async function addContent(req, res) {
 
 async function assignContent(req, res) {
   try {
-    const { userID, contentID } = req.params;
+    const { userID, contentID } = req.body;
     const userDoc = await db.collection("users").doc(userID).get();
     const contentDoc = await db.collection("contents").doc(contentID).get();
     if (!userDoc.exists) {

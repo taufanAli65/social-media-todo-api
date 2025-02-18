@@ -52,15 +52,28 @@ The API will be running at `http://localhost:your_app_port`.
 ### Authentication
 
 - `POST /auth/register`: Register a new user
-- `POST /auth/login`: Login an admin user
+- `POST /auth/login`: Login an admin/user
 - `DELETE /auth/delete/:userID`: Delete a user (admin only)
 
 ### Content
 
-- `GET /content`: Get all contents (admin only)
-- `GET /content`: Get all contents managed or assigned to the user (for user)
+- `GET /content`: Get all contents (admin only) and get all contents managed or assigned to the user (for user)
 - `POST /content`: Add new content (admin only)
-- `POST /assign/:contentID/:userID`: Assign user to manage content (admin only)
+- `POST /content/assign`: Assign user to manage content (admin only)
+
+### On Development
+
+#### Content
+
+- `GET /content/:userID`: Get all contents managed or assigned to the user
+- `GET /content/:status`: Get all contents, sort by status (done, on-progress, assigned, unassigned)
+- `GET /content/:userID/:status`: Get all contents managed or assigned to the user, sort by status (done, on-progress, assigned)
+- `GET /content/due`: Get all contents that already due
+- `GET /content/:contentID`: Get spesific content
+- `GET /content/filter`: Get filtered content
+- `PUT /content/`: Update content status (asigned user only)
+- `PUT /content/assign`: Re-assign user to manage content (admin only)
+- `DELETE /content/:contentID`: Delete content (admin only)
 
 ## Running Tests
 
