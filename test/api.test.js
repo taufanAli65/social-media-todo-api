@@ -153,6 +153,22 @@ describe("POST /assign/:contentID/:userID", () => {
     expect(response.status).toBe(404);
     expect(response.body.status).toBe("User not found");
   });
+
+  it("should return an error if content does not exist", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .post(`/content/assign/nonexistentContentID/${createdUserID}`)
+      .set("Authorization", `Bearer ${idToken}`);
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("Content not found");
+  });
 });
 
 afterAll(async () => {
