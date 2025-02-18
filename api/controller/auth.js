@@ -12,13 +12,14 @@ async function register(req, res) {
       })
       .then(async (userRecord) => {
         userID = userRecord.uid;
-        await db.collection("users").doc(userID).set({ roles: "employee" });
-        res
-          .status(200)
-          .json({
-            status: "Success",
-            message: `Successfully created new User : ${userID}`,
-          });
+        await db
+          .collection("users")
+          .doc(userID)
+          .set({ roles: "employee", employment_status: "active" });
+        res.status(200).json({
+          status: "Success",
+          message: `Successfully created new User : ${userID}`,
+        });
       });
   } catch (error) {
     res
@@ -27,4 +28,18 @@ async function register(req, res) {
   }
 }
 
-module.exports = { register };
+async function deleteUser(req, res) {
+  try {
+    const { userID } = req.params;
+    if (!userID) {
+      throw new Error("There is not user id provided!");
+    }
+    await auth.deleteUser(userID).then((userID) => {
+      res.status(200).json(`User ID : ${userID} is deleted successfully`);
+    });
+  } catch (error) {
+    res.status(500).json({ status: "failed", error: error.message });
+  }
+} // only for testing purposes
+
+module.exports = { register, deleteUser };
