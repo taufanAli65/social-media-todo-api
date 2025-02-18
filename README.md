@@ -58,6 +58,7 @@ The API will be running at `http://localhost:your_app_port`.
 ### Content
 
 - `GET /content`: Get all contents (admin only)
+- `GET /content`: Get all contents managed or assigned to the user (for user)
 - `POST /content`: Add new content (admin only)
 - `POST /assign/:contentID/:userID`: Assign user to manage content (admin only)
 
