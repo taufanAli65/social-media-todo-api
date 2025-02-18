@@ -12,6 +12,6 @@ router.post("/", authenticate, verifyRoles, async (req, res) => {
 });
 router.post("/assign/:contentID/:userID", authenticate, verifyRoles, async (req, res) => {
   assignContent(req, res);
-})
+});
 
 module.exports = router;

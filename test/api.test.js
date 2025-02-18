@@ -11,6 +11,7 @@ app.use("/auth", authRouter);
 app.use("/content", contentRouter);
 
 let createdUserID;
+let contentID;
 
 describe("POST /auth/register", () => {
   it("should register a new user and set user roles to employee", async () => {
@@ -99,6 +100,7 @@ describe("POST /content", () => {
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("Success");
     expect(response.body.content).toMatchObject(newContent);
+    contentID = response.body.id;
   });
 
   it("should return an error if required fields are missing", async () => {
@@ -116,6 +118,40 @@ describe("POST /content", () => {
       .send({ title: "Incomplete Content" });
     expect(response.status).toBe(500);
     expect(response.body.status).toBe("Internal Server Error");
+  });
+});
+
+describe("POST /assign/:contentID/:userID", () => {
+  it("should assign content to a user", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+    const response = await request(app)
+      .post(`/content/assign/${contentID}/${createdUserID}`)
+      .set("Authorization", `Bearer ${idToken}`);
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe("Success");
+    expect(response.body.message).toContain("Content successfully assigned");
+  });
+
+  it("should return an error if user does not exist", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .post(`/content/assign/${contentID}/nonexistentUserID`)
+      .set("Authorization", `Bearer ${idToken}`);
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("User not found");
   });
 });
 

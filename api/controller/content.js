@@ -1,5 +1,5 @@
 const { db, auth } = require("../firebase-config");
-const { assignDueDate, check_user } = require("../utils");
+const { assignDueDate } = require("../utils");
 
 async function getAllContents(req, res) {
   try {
@@ -21,6 +21,7 @@ async function getAllContents(req, res) {
 
 async function addContent(req, res) {
   try {
+    let contentID; // initialize contentID
     const { title, brand, platform, payment } = req.body;
     if (!title || !brand || !platform || !payment) {
       throw new Error(
@@ -31,10 +32,13 @@ async function addContent(req, res) {
     const dueDate = assignDueDate(); // due date = 1 week after today
     await db
       .collection("contents")
-      .add({ title, brand, platform, payment, status, dueDate });
+      .add({ title, brand, platform, payment, status, dueDate }).then((content) => {
+        contentID = content.id;
+      });
     res.status(200).json({
       status: "Success",
       content: { title, brand, platform, payment, status, dueDate },
+      id: contentID,
     });
   } catch (error) {
     res
@@ -46,9 +50,13 @@ async function addContent(req, res) {
 async function assignContent(req, res) {
   try {
     const { userID, contentID } = req.params;
-    const userExists = await check_user(userID);
-    if (!userExists) {
-      throw new Error("User not found");
+    const userDoc = await db.collection("users").doc(userID).get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ status: "User not found" });
+    }
+    const contentDoc = await db.collection("contents").doc(contentID).get();
+    if (!contentDoc.exists) {
+      return res.status(404).json({ status: "Content not found" });
     }
     await db.collection("contents").doc(contentID).set(
       {
@@ -63,7 +71,7 @@ async function assignContent(req, res) {
       },
       { merge: true }
     ); // update user to assigned
-    const userRecord = await auth.getUser(uid);
+    const userRecord = await auth.getUser(userID);
     const userName = userRecord.displayName || userRecord.uid;
     res.status(200).json({
       status: "Success",
