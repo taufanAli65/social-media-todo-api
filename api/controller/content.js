@@ -1,5 +1,5 @@
-const { db } = require("../firebase-config");
-const { assignDueDate } = require("../utils");
+const { db, auth } = require("../firebase-config");
+const { assignDueDate, check_user } = require("../utils");
 
 async function getAllContents(req, res) {
   try {
@@ -43,4 +43,37 @@ async function addContent(req, res) {
   }
 } // add new content to manage
 
-module.exports = { getAllContents, addContent };
+async function assignContent(req, res) {
+  try {
+    const { userID, contentID } = req.params;
+    const userExists = await check_user(userID);
+    if (!userExists) {
+      throw new Error("User not found");
+    }
+    await db.collection("contents").doc(contentID).set(
+      {
+        status: "assigned",
+        assignedTo: userID,
+      },
+      { merge: true }
+    ); // assigned content to user
+    await db.collection("users").doc(userID).set(
+      {
+        assigned: true,
+      },
+      { merge: true }
+    ); // update user to assigned
+    const userRecord = await auth.getUser(uid);
+    const userName = userRecord.displayName || userRecord.uid;
+    res.status(200).json({
+      status: "Success",
+      message: `Content successfully assigned to ${userName}`,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: "Internal Server Error", error: error.message });
+  }
+}
+
+module.exports = { getAllContents, addContent, assignContent };

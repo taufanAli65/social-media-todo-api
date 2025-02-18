@@ -17,7 +17,7 @@ async function register(req, res) {
         await db
           .collection("users")
           .doc(userID)
-          .set({ roles: "employee", employment_status: "active" });
+          .set({ roles: "employee", employment_status: "active", assigned: false });
         res.status(200).json({
           status: "Success",
           message: `Successfully created new User : ${userID}`,
