@@ -55,6 +55,11 @@ The API will be running at `http://localhost:your_app_port`.
 - `POST /auth/login`: Login an admin user
 - `POST /auth/delete/:userID`: Delete a user (admin only)
 
+### Content
+
+- `GET /content`: Get all contents (admin only)
+- `POST /content`: Add new content (admin only)
+
 ## Running Tests
 
 To run the tests, use:
