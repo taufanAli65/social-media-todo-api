@@ -198,7 +198,7 @@ afterAll(async () => {
   const idToken = response.body.idToken;
 
   await request(app)
-    .post(`/auth/delete/${createdUserID}`)
+    .delete(`/auth/delete/${createdUserID}`)
     .set("Authorization", `Bearer ${idToken}`)
     .send();
 

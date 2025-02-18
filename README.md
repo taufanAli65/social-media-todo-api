@@ -53,7 +53,7 @@ The API will be running at `http://localhost:your_app_port`.
 
 - `POST /auth/register`: Register a new user
 - `POST /auth/login`: Login an admin user
-- `POST /auth/delete/:userID`: Delete a user (admin only)
+- `DELETE /auth/delete/:userID`: Delete a user (admin only)
 
 ### Content
 
