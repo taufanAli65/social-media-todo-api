@@ -12,7 +12,6 @@ app.use("/content", contentRouter);
 
 let createdUserID;
 let contentID;
-
 describe("POST /auth/register", () => {
   it("should register a new user and set user roles to employee", async () => {
     const response = await request(app)
@@ -74,6 +73,22 @@ describe("GET /content", () => {
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("Success");
     expect(response.body.contents).toBeInstanceOf(Array);
+  });
+
+  it("should return no contents if user has no assigned contents", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: "test@example.com",
+        password: "password123"
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .get("/content")
+      .set("Authorization", `Bearer ${idToken}`);
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("No Contents");
   });
 });
 
@@ -202,6 +217,5 @@ afterAll(async () => {
     .set("Authorization", `Bearer ${idToken}`)
     .send();
 
-    const contents = db.collection("contents").doc(contentID);
-    await contents.delete();
+  await db.collection("contents").doc(contentID).delete();
 });

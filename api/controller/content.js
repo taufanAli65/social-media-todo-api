@@ -4,12 +4,24 @@ const { assignDueDate } = require("../utils");
 async function getAllContents(req, res) {
   try {
     let data = [];
-    const response = await db.collection("contents").get();
-    response.forEach((doc) => {
-      data.push(doc.id, "=>", doc.data());
-    });
-    if (!data) {
-      res.status(204).json({ status: "No Contents" });
+    const user = (await db.collection("users").doc(req.user.uid).get()).data();
+    const userRoles = user.roles;
+    if (userRoles === "admin") {
+      const response = await db.collection("contents").get();
+      response.forEach((doc) => {
+        data.push({ id: doc.id, ...doc.data() });
+      }); // get all data if the user have admin roles
+    } else {
+      const response = await db
+        .collection("contents")
+        .where("assignedTo", "==", req.user.uid)
+        .get();
+      response.forEach((doc) => {
+        data.push({ id: doc.id, ...doc.data() });
+      }); // get user data if the user didn't have admin roles
+    }
+    if (data.length === 0) {
+      return res.status(404).json({ status: "No Contents" });
     }
     res.status(200).json({ status: "Success", contents: data });
   } catch (error) {
@@ -17,7 +29,7 @@ async function getAllContents(req, res) {
       .status(500)
       .json({ status: "Internal Server Error", error: error.message });
   }
-} // get all content
+} // get all content based on user roles
 
 async function addContent(req, res) {
   try {
@@ -32,7 +44,8 @@ async function addContent(req, res) {
     const dueDate = assignDueDate(); // due date = 1 week after today
     await db
       .collection("contents")
-      .add({ title, brand, platform, payment, status, dueDate }).then((content) => {
+      .add({ title, brand, platform, payment, status, dueDate })
+      .then((content) => {
         contentID = content.id;
       });
     res.status(200).json({
@@ -54,12 +67,12 @@ async function assignContent(req, res) {
     const contentDoc = await db.collection("contents").doc(contentID).get();
     if (!userDoc.exists) {
       return res.status(404).json({ status: "User not found" });
-    }
-    else if (!contentDoc.exists) {
+    } else if (!contentDoc.exists) {
       return res.status(404).json({ status: "Content not found" });
-    }
-    else if (userDoc.data().assigned || contentDoc.data().assigned) {
-      return res.status(400).json({ status: "User or Content already assigned" });
+    } else if (userDoc.data().assigned || contentDoc.data().assigned) {
+      return res
+        .status(400)
+        .json({ status: "User or Content already assigned" });
     }
     await db.collection("contents").doc(contentID).set(
       {

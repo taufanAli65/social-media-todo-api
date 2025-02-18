@@ -4,7 +4,7 @@ const verifyRoles = require("../middleware/verifyRole");
 const { getAllContents, addContent, assignContent } = require("../controller/content");
 const router = express();
 
-router.get("/", authenticate, verifyRoles, async (req, res) => {
+router.get("/", authenticate, async (req, res) => {
   getAllContents(req, res);
 });
 router.post("/", authenticate, verifyRoles, async (req, res) => {
