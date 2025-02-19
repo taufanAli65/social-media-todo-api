@@ -99,6 +99,43 @@ describe("GET /content", () => {
   });
 });
 
+describe("GET /content/:userID", () => {
+  it("should get contents assigned to a user", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .get(`/content/${process.env.ASSIGNED_USERID}`)
+      .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe("Success");
+    expect(response.body.contents).toBeInstanceOf(Array);
+  });
+
+  it("should return an error if user does not exist", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .get(`/content/nonexistentUserID`)
+      .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("User not found");
+  });
+});
+
 describe("GET /content/all/:status", () => {
   it("should get contents by status", async () => {
     const loginResponse = await request(app)

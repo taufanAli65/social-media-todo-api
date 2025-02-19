@@ -32,6 +32,7 @@ A simple CRUD API for managing to-do list posts on social media. The API allows 
     ADMIN_EMAIL=your_admin_email
     ADMIN_PASSWORD=your_admin_password
     APP_PORT=your_app_port
+    ASSIGNED_USERID=assigned_userID_for_content
     ```
 
 4. Generate a `firebase-config.json` from firebase console and move file in the root directory
@@ -76,6 +77,12 @@ The API will be running at `http://localhost:your_app_port`.
 - `DELETE /content/:contentID`: Delete content (admin only)
 
 ## Running Tests
+
+Before running the test ensure to follow this step first :
+1. Register your email into firebase authentication and save the id into firestore collection(users) > docID(your_account_id) with field (roles: `admin`)
+2. Register other email manually at `POST /auth/register`
+3. Add content manually at `POST /content`
+4. Assign content to other account manually at `POST /content/assign`
 
 To run the tests, use:
 ```sh
