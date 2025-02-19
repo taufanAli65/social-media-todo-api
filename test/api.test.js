@@ -99,6 +99,43 @@ describe("GET /content", () => {
   });
 });
 
+describe("GET /content/all/:status", () => {
+  it("should get contents by status", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .get("/content/all/assigned")
+      .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe("Success");
+    expect(response.body.contents).toBeInstanceOf(Array);
+  });
+
+  it("should return an error for invalid status", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .get("/content/all/invalid-status")
+      .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(400);
+    expect(response.body.status).toBe("Invalid status parameter");
+  });
+});
+
 describe("POST /content", () => {
   it("should add new content", async () => {
     const loginResponse = await request(app)
