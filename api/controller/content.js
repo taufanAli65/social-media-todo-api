@@ -1,5 +1,5 @@
 const { db, auth } = require("../firebase-config");
-const { assignDueDate, check_docs_exist } = require("../utils");
+const { assignDueDate } = require("../utils");
 
 async function getAllContents(req, res) {
   try {
@@ -34,7 +34,10 @@ async function getAllContents(req, res) {
 async function getUserAssignedContents(req, res) {
   try {
     const userID = req.params.userID;
-    await check_docs_exist(req, res, "users", userID); // check if the user exist
+    const userResponse = await db.collection("users").doc(userID).get(); // check if the user exist
+    if (!userResponse.exists) {
+      return res.status(404).json({ status: "User not found" });
+    }
     let data = [];
     const user = (await db.collection("users").doc(req.user.uid).get()).data();
     if (user.roles === "admin" || userID == req.user.id) {
@@ -120,8 +123,24 @@ async function addContent(req, res) {
 async function assignContent(req, res) {
   try {
     const { userID, contentID } = req.body;
-    await check_docs_exist(req, res, "users", userID); // check if the user exist
-    await check_docs_exist(req, res, "contents", contentID); // check if the content exist
+    if (!userID || !contentID) {
+      return res
+      .status(400)
+      .json({ status: "There is no user ID or content ID given" });
+    }
+    const userResponse = await db.collection("users").doc(userID).get(); // check if the user exist
+    if (!userResponse.exists) {
+      return res.status(404).json({ status: "User not found" });
+    }
+    const contentResponse = await db.collection("contents").doc(contentID).get(); // check if the content exist
+    if (!contentResponse.exists) {
+      return res.status(404).json({ status: "Content not found" });
+    }
+    if (contentResponse.data() && contentResponse.data().assignedTo) {
+      return res
+        .status(400)
+        .json({ status: "User or Content already assigned" });
+    } // checking if there is response data and contain assigned fields
     await db.collection("contents").doc(contentID).set(
       {
         status: "assigned",

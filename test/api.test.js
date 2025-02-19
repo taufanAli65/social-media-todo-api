@@ -136,7 +136,7 @@ describe("POST /content", () => {
   });
 });
 
-describe("POST /assign/:contentID/:userID", () => {
+describe("POST /assign", () => {
   it("should assign content to a user", async () => {
     const loginResponse = await request(app)
       .post("/auth/login")
