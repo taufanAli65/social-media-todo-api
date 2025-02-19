@@ -48,6 +48,10 @@ yarn start
 
 The API will be running at `http://localhost:your_app_port`.
 
+## API Documentation
+
+Interactive API documentation is available at `http://localhost:your_app_port/api-docs`.
+
 ## API Endpoints
 
 ### Authentication
