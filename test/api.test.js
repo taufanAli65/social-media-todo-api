@@ -147,7 +147,7 @@ describe("GET /content/all/:status", () => {
     const idToken = loginResponse.body.idToken;
 
     const response = await request(app)
-      .get("/content/all/assigned")
+      .get("/content/all/done")
       .set("Authorization", `Bearer ${idToken}`);
     console.log(response.body); // Add logging
     expect(response.status).toBe(200);
@@ -368,6 +368,116 @@ describe("PUT /content/reassign", () => {
     console.log(response.body); // Add logging
     expect(response.status).toBe(404);
     expect(response.body.status).toBe("Content not found");
+  });
+});
+
+describe("PUT /content/", () => {
+  it("should update the status of a content", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .put("/content/")
+      .set("Authorization", `Bearer ${idToken}`)
+      .send({
+        userID: createdUserID,
+        contentID: contentID,
+        status: "done"
+      });
+    console.log("Request payload:", {
+      userID: createdUserID,
+      contentID: contentID,
+      status: "done"
+    }); // Add detailed logging
+    console.log("Response body:", response.body); // Add detailed logging
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe("Success");
+  });
+
+  it("should return an error if user does not exist", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .put("/content/")
+      .set("Authorization", `Bearer ${idToken}`)
+      .send({
+        userID: "nonexistentUserID",
+        contentID: contentID,
+        status: "done"
+      });
+    console.log("Request payload:", {
+      userID: "nonexistentUserID",
+      contentID: contentID,
+      status: "done"
+    }); // Add detailed logging
+    console.log("Response body:", response.body); // Add detailed logging
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("User not found");
+  });
+
+  it("should return an error if content does not exist", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .put("/content/")
+      .set("Authorization", `Bearer ${idToken}`)
+      .send({
+        userID: createdUserID,
+        contentID: "nonexistentContentID",
+        status: "done"
+      });
+    console.log("Request payload:", {
+      userID: createdUserID,
+      contentID: "nonexistentContentID",
+      status: "done"
+    }); // Add detailed logging
+    console.log("Response body:", response.body); // Add detailed logging
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("Content not found");
+  });
+
+  it("should return an error if user is not authorized to update the content", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .put("/content/")
+      .set("Authorization", `Bearer ${idToken}`)
+      .send({
+        userID: process.env.ASSIGNED_USERID,
+        contentID: contentID,
+        status: "done"
+      });
+    console.log("Request payload:", {
+      userID: process.env.ASSIGNED_USERID,
+      contentID: contentID,
+      status: "done"
+    }); // Add detailed logging
+    console.log("Response body:", response.body); // Add detailed logging
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("User not authorized to update this content");
   });
 });
 

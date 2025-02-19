@@ -8,6 +8,7 @@ const {
   addContent,
   assignContent,
   reAssignContent,
+  updateStatus,
 } = require("../controller/content");
 const router = express();
 
@@ -28,6 +29,9 @@ router.post("/assign", authenticate, verifyRoles, async (req, res) => {
 });
 router.put("/reassign", authenticate, verifyRoles, async (req, res) => {
   reAssignContent(req, res);
+});
+router.put("/", authenticate, async (req, res) => {
+  updateStatus(req, res);
 });
 
 module.exports = router;

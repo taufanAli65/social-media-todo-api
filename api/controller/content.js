@@ -92,7 +92,7 @@ async function getUserContentsByStatus(req, res) {
     }
     res.status(200).json({ status: "Success", contents: data });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res
       .status(500)
       .json({ status: "Internal Server Error", error: error.message });
@@ -133,15 +133,18 @@ async function assignContent(req, res) {
     const { userID, contentID } = req.body;
     if (!userID || !contentID) {
       return res
-      .status(400)
-      .json({ status: "There is no user ID or content ID given" });
+        .status(400)
+        .json({ status: "There is no user ID or content ID given" });
     }
     const userResponse = await db.collection("users").doc(userID).get(); // check if the user exist
     if (!userResponse.exists) {
       console.log("User not found"); // Add logging
       return res.status(404).json({ status: "User not found" });
     }
-    const contentResponse = await db.collection("contents").doc(contentID).get(); // check if the content exist
+    const contentResponse = await db
+      .collection("contents")
+      .doc(contentID)
+      .get(); // check if the content exist
     if (!contentResponse.exists) {
       console.log("Content not found"); // Add logging
       return res.status(404).json({ status: "Content not found" });
@@ -181,13 +184,16 @@ async function assignContent(req, res) {
 
 async function reAssignContent(req, res) {
   try {
-    const {userID, contentID} = req.body;
+    const { userID, contentID } = req.body;
     const userResponse = await db.collection("users").doc(userID).get(); // check if the user exist
     if (!userResponse.exists) {
       console.log("User not found"); // Add logging
       return res.status(404).json({ status: "User not found" });
     }
-    const contentResponse = await db.collection("contents").doc(contentID).get(); // check if the content exist
+    const contentResponse = await db
+      .collection("contents")
+      .doc(contentID)
+      .get(); // check if the content exist
     if (!contentResponse.exists) {
       console.log("Content not found"); // Add logging
       return res.status(404).json({ status: "Content not found" });
@@ -219,6 +225,61 @@ async function reAssignContent(req, res) {
   }
 }
 
+async function updateStatus(req, res) {
+  try {
+    const { userID, contentID, status } = req.body;
+    if (
+      !status || !userID || !contentID
+    ) {
+      throw new Error(
+        "Missing required fields: user ID, content ID, or status"
+      );
+    }
+    if (
+      status !== "done" &&
+      status !== "on-progress" &&
+      status !== "assigned" &&
+      status !== "unassigned"
+    ) {
+      throw new Error(
+        "Invalid status"
+      );
+    }
+    const userResponse = await db.collection("users").doc(userID).get(); // check if the user exist
+    if (!userResponse.exists) {
+      console.log("User not found"); // Add logging
+      return res.status(404).json({ status: "User not found" });
+    }
+    const contentResponse = await db
+      .collection("contents")
+      .doc(contentID)
+      .get(); // check if the content exist
+    if (!contentResponse.exists) {
+      console.log("Content not found"); // Add logging
+      return res.status(404).json({ status: "Content not found" });
+    }
+    const contentData = contentResponse.data();
+    if (userID !== contentData.assignedTo) {
+      console.log(`User ID ${userID} does not match the assigned user ID ${contentData.assignedTo}`); // Add logging
+      return res.status(404).json({ status: "User not authorized to update this content" });
+    }
+    await db.collection("contents").doc(contentID).set(
+      {
+        status: status,
+      },
+      { merge: true }
+    ); // update content status
+    res.status(200).json({
+      status: "Success",
+      message: `Content successfully updated to ${status}`,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: "Internal Server Error", error: error.message });
+  }
+}
+
 module.exports = {
   getAllContents,
   getUserAssignedContents,
@@ -226,4 +287,5 @@ module.exports = {
   addContent,
   assignContent,
   reAssignContent,
+  updateStatus,
 };
