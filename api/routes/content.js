@@ -1,11 +1,23 @@
 const express = require("express");
 const authenticate = require("../middleware/authenticate");
 const verifyRoles = require("../middleware/verifyRole");
-const { getAllContents, addContent, assignContent } = require("../controller/content");
+const {
+  getAllContents,
+  getUserAssignedContents,
+  getUserContentsByStatus,
+  addContent,
+  assignContent,
+} = require("../controller/content");
 const router = express();
 
 router.get("/", authenticate, async (req, res) => {
   getAllContents(req, res);
+});
+router.get("/:userID", authenticate, async (req, res) => {
+  getUserAssignedContents(req, res);
+});
+router.get("/all/:status", authenticate, verifyRoles, async (req, res) => {
+  getUserContentsByStatus(req, res);
 });
 router.post("/", authenticate, verifyRoles, async (req, res) => {
   addContent(req, res);

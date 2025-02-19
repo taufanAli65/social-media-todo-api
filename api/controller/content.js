@@ -1,5 +1,5 @@
 const { db, auth } = require("../firebase-config");
-const { assignDueDate } = require("../utils");
+const { assignDueDate, check_docs_exist } = require("../utils");
 
 async function getAllContents(req, res) {
   try {
@@ -30,6 +30,63 @@ async function getAllContents(req, res) {
       .json({ status: "Internal Server Error", error: error.message });
   }
 } // get all content based on user roles
+
+async function getUserAssignedContents(req, res) {
+  try {
+    const userID = req.params.userID;
+    await check_docs_exist(req, res, "users", userID); // check if the user exist
+    let data = [];
+    const user = (await db.collection("users").doc(req.user.uid).get()).data();
+    if (user.roles === "admin" || userID == req.user.id) {
+      const response = await db
+        .collection("contents")
+        .where("assignedTo", "==", userID)
+        .get();
+      response.forEach((doc) => {
+        data.push({ id: doc.id, ...doc.data() });
+      }); // ensure that the user can only see their content management, except for the admin
+    }
+    if (data.length === 0) {
+      return res.status(404).json({ status: "No Contents" });
+    }
+    res.status(200).json({ status: "Success", contents: data });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: "Internal Server Error", error: error.message });
+  }
+} // get all contents assigned to, on-progress, and completed by the user
+
+async function getUserContentsByStatus(req, res) {
+  try {
+    let data = [];
+    const status = req.params.status;
+    if (
+      status !== "done" &&
+      status !== "on-progress" &&
+      status !== "assigned" &&
+      status !== "unassigned"
+    ) {
+      return res.status(400).json({ status: "Invalid status parameter" });
+    }
+    const response = await db
+      .collection("contents")
+      .where("status", "==", status)
+      .get();
+    response.forEach((doc) => {
+      data.push({ id: doc.id, ...doc.data() });
+    });
+    if (data.length === 0) {
+      return res.status(404).json({ status: "No Contents" });
+    }
+    res.status(200).json({ status: "Success", contents: data });
+  } catch (error) {
+    console.log(error)
+    res
+      .status(500)
+      .json({ status: "Internal Server Error", error: error.message });
+  }
+} // get all user managed contents, sort by assigned, unassigned, on-progress, and done
 
 async function addContent(req, res) {
   try {
@@ -63,17 +120,8 @@ async function addContent(req, res) {
 async function assignContent(req, res) {
   try {
     const { userID, contentID } = req.body;
-    const userDoc = await db.collection("users").doc(userID).get();
-    const contentDoc = await db.collection("contents").doc(contentID).get();
-    if (!userDoc.exists) {
-      return res.status(404).json({ status: "User not found" });
-    } else if (!contentDoc.exists) {
-      return res.status(404).json({ status: "Content not found" });
-    } else if (userDoc.data().assigned || contentDoc.data().assigned) {
-      return res
-        .status(400)
-        .json({ status: "User or Content already assigned" });
-    }
+    await check_docs_exist(req, res, "users", userID); // check if the user exist
+    await check_docs_exist(req, res, "contents", contentID); // check if the content exist
     await db.collection("contents").doc(contentID).set(
       {
         status: "assigned",
@@ -98,6 +146,12 @@ async function assignContent(req, res) {
       .status(500)
       .json({ status: "Internal Server Error", error: error.message });
   }
-}
+} // assign content to user
 
-module.exports = { getAllContents, addContent, assignContent };
+module.exports = {
+  getAllContents,
+  getUserAssignedContents,
+  getUserContentsByStatus,
+  addContent,
+  assignContent,
+};
