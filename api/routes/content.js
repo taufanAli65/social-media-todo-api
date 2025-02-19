@@ -7,6 +7,7 @@ const {
   getUserContentsByStatus,
   addContent,
   assignContent,
+  reAssignContent,
 } = require("../controller/content");
 const router = express();
 
@@ -22,8 +23,11 @@ router.get("/all/:status", authenticate, verifyRoles, async (req, res) => {
 router.post("/", authenticate, verifyRoles, async (req, res) => {
   addContent(req, res);
 });
-router.post("/assign/", authenticate, verifyRoles, async (req, res) => {
+router.post("/assign", authenticate, verifyRoles, async (req, res) => {
   assignContent(req, res);
+});
+router.put("/reassign", authenticate, verifyRoles, async (req, res) => {
+  reAssignContent(req, res);
 });
 
 module.exports = router;

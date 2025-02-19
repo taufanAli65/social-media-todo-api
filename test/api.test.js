@@ -303,7 +303,72 @@ describe("POST /assign", () => {
     expect(response.status).toBe(400);
     expect(response.body.status).toBe("User or Content already assigned");
   });
-  
+});
+
+describe("PUT /content/reassign", () => {
+  it("should reassign content to a different user", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .put("/content/reassign")
+      .set("Authorization", `Bearer ${idToken}`)
+      .send({
+        userID: process.env.ASSIGNED_USERID,
+        contentID: contentID
+      });
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe("Success");
+    expect(response.body.message).toContain("Content successfully re-assigned");
+  });
+
+  it("should return an error if user does not exist", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .put("/content/reassign")
+      .set("Authorization", `Bearer ${idToken}`)
+      .send({
+        userID: "nonexistentUserID",
+        contentID: contentID
+      });
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("User not found");
+  });
+
+  it("should return an error if content does not exist", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .put("/content/reassign")
+      .set("Authorization", `Bearer ${idToken}`)
+      .send({
+        userID: process.env.ASSIGNED_USERID,
+        contentID: "nonexistentContentID"
+      });
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("Content not found");
+  });
 });
 
 afterAll(async () => {

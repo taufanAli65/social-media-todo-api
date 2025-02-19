@@ -1,5 +1,3 @@
-const { db } = require("../api/firebase-config");
-
 function assignDueDate() {
   let today = new Date();
   today.setDate(today.getDate() + 7); // Add 7 days

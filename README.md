@@ -63,6 +63,7 @@ The API will be running at `http://localhost:your_app_port`.
 - `GET /content/all/:status`: Get all contents, sort by status (done, on-progress, assigned, unassigned) (admin only)
 - `POST /content`: Add new content (admin only)
 - `POST /content/assign`: Assign user to manage content (admin only)
+- `PUT /content/reassign`: Re-assign user to manage content (admin only)
 
 ### On Development
 
@@ -73,7 +74,6 @@ The API will be running at `http://localhost:your_app_port`.
 - `GET /content/:contentID`: Get spesific content
 - `GET /content/filter`: Get filtered content
 - `PUT /content/`: Update content status (asigned user only)
-- `PUT /content/assign`: Re-assign user to manage content (admin only)
 - `DELETE /content/:contentID`: Delete content (admin only)
 
 ## Running Tests

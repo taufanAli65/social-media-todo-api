@@ -179,10 +179,51 @@ async function assignContent(req, res) {
   }
 } // assign content to user
 
+async function reAssignContent(req, res) {
+  try {
+    const {userID, contentID} = req.body;
+    const userResponse = await db.collection("users").doc(userID).get(); // check if the user exist
+    if (!userResponse.exists) {
+      console.log("User not found"); // Add logging
+      return res.status(404).json({ status: "User not found" });
+    }
+    const contentResponse = await db.collection("contents").doc(contentID).get(); // check if the content exist
+    if (!contentResponse.exists) {
+      console.log("Content not found"); // Add logging
+      return res.status(404).json({ status: "Content not found" });
+    }
+    await db.collection("contents").doc(contentID).set(
+      {
+        assignedTo: userID,
+        dueDate: assignDueDate(),
+      },
+      { merge: true }
+    ); // assigned content to user
+    await db.collection("users").doc(userID).set(
+      {
+        assigned: false,
+      },
+      { merge: true }
+    ); // update user to assigned
+    const userRecord = await auth.getUser(userID);
+    const userName = userRecord.displayName || userRecord.uid;
+    res.status(200).json({
+      status: "Success",
+      message: `Content successfully re-assigned to ${userName}`,
+    });
+  } catch (error) {
+    console.log(error); // Add logging
+    res
+      .status(500)
+      .json({ status: "Internal Server Error", error: error.message });
+  }
+}
+
 module.exports = {
   getAllContents,
   getUserAssignedContents,
   getUserContentsByStatus,
   addContent,
   assignContent,
+  reAssignContent,
 };
