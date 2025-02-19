@@ -4,7 +4,11 @@ const { assignDueDate } = require("../utils");
 async function getAllContents(req, res) {
   try {
     let data = [];
-    const user = (await db.collection("users").doc(req.user.uid).get()).data();
+    const userDoc = await db.collection("users").doc(req.user.uid).get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ status: "User not found" });
+    }
+    const user = userDoc.data();
     const userRoles = user.roles;
     if (userRoles === "admin") {
       const response = await db.collection("contents").get();
@@ -39,7 +43,11 @@ async function getUserAssignedContents(req, res) {
       return res.status(404).json({ status: "User not found" });
     }
     let data = [];
-    const user = (await db.collection("users").doc(req.user.uid).get()).data();
+    const userDoc = await db.collection("users").doc(req.user.uid).get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ status: "User not found" });
+    }
+    const user = userDoc.data();
     if (user.roles === "admin" || userID == req.user.id) {
       const response = await db
         .collection("contents")
@@ -130,13 +138,16 @@ async function assignContent(req, res) {
     }
     const userResponse = await db.collection("users").doc(userID).get(); // check if the user exist
     if (!userResponse.exists) {
+      console.log("User not found"); // Add logging
       return res.status(404).json({ status: "User not found" });
     }
     const contentResponse = await db.collection("contents").doc(contentID).get(); // check if the content exist
     if (!contentResponse.exists) {
+      console.log("Content not found"); // Add logging
       return res.status(404).json({ status: "Content not found" });
     }
     if (contentResponse.data() && contentResponse.data().assignedTo) {
+      console.log("User or Content already assigned"); // Add logging
       return res
         .status(400)
         .json({ status: "User or Content already assigned" });
@@ -161,6 +172,7 @@ async function assignContent(req, res) {
       message: `Content successfully assigned to ${userName}`,
     });
   } catch (error) {
+    console.log(error); // Add logging
     res
       .status(500)
       .json({ status: "Internal Server Error", error: error.message });

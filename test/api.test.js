@@ -12,15 +12,18 @@ app.use("/content", contentRouter);
 
 let createdUserID;
 let contentID;
+const uniqueEmail = `test${Date.now()}@example.com`;
+
 describe("POST /auth/register", () => {
   it("should register a new user and set user roles to employee", async () => {
     const response = await request(app)
       .post("/auth/register")
       .send({
-        email: "test@example.com",
+        email: uniqueEmail,
         password: "password123",
         name: "Test User"
       });
+    console.log(response.body); // Add logging
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("Success");
     expect(response.body.message).toContain("Successfully created new User");
@@ -39,6 +42,7 @@ describe("POST /auth/register", () => {
         password: "short",
         name: "Test User"
       });
+    console.log(response.body); // Add logging
     expect(response.status).toBe(500);
     expect(response.body.status).toBe("Internal Server Error");
   });
@@ -52,6 +56,7 @@ describe("POST /auth/login", () => {
         email: process.env.ADMIN_EMAIL,
         password: process.env.ADMIN_PASSWORD
       });
+    console.log(response.body); // Add logging
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("idToken");
   });
@@ -70,6 +75,7 @@ describe("GET /content", () => {
     const response = await request(app)
       .get("/content")
       .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("Success");
     expect(response.body.contents).toBeInstanceOf(Array);
@@ -79,7 +85,7 @@ describe("GET /content", () => {
     const loginResponse = await request(app)
       .post("/auth/login")
       .send({
-        email: "test@example.com",
+        email: uniqueEmail,
         password: "password123"
       });
     const idToken = loginResponse.body.idToken;
@@ -87,6 +93,7 @@ describe("GET /content", () => {
     const response = await request(app)
       .get("/content")
       .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
     expect(response.status).toBe(404);
     expect(response.body.status).toBe("No Contents");
   });
@@ -112,6 +119,7 @@ describe("POST /content", () => {
       .post("/content")
       .set("Authorization", `Bearer ${idToken}`)
       .send(newContent);
+    console.log(response.body); // Add logging
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("Success");
     expect(response.body.content).toMatchObject(newContent);
@@ -131,6 +139,7 @@ describe("POST /content", () => {
       .post("/content")
       .set("Authorization", `Bearer ${idToken}`)
       .send({ title: "Incomplete Content" });
+    console.log(response.body); // Add logging
     expect(response.status).toBe(500);
     expect(response.body.status).toBe("Internal Server Error");
   });
@@ -152,6 +161,7 @@ describe("POST /assign", () => {
         userID: createdUserID,
         contentID: contentID
       });
+    console.log(response.body); // Add logging
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("Success");
     expect(response.body.message).toContain("Content successfully assigned");
@@ -170,9 +180,10 @@ describe("POST /assign", () => {
       .post(`/content/assign`)
       .set("Authorization", `Bearer ${idToken}`)
       .send({
-        userID: createdUserID,
-        contentID: "nonexistentUserID"
+        userID: "nonexistentUserID",
+        contentID: contentID
       });
+    console.log(response.body); // Add logging
     expect(response.status).toBe(404);
     expect(response.body.status).toBe("User not found");
   });
@@ -192,7 +203,8 @@ describe("POST /assign", () => {
       .send({
         userID: createdUserID,
         contentID: "nonexistentContentID"
-      });;
+      });
+    console.log(response.body); // Add logging
     expect(response.status).toBe(404);
     expect(response.body.status).toBe("Content not found");
   });
@@ -212,7 +224,8 @@ describe("POST /assign", () => {
       .send({
         userID: createdUserID,
         contentID: contentID
-      });;
+      });
+    console.log(response.body); // Add logging
     expect(response.status).toBe(400);
     expect(response.body.status).toBe("User or Content already assigned");
   });
