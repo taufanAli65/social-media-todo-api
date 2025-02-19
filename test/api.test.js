@@ -99,7 +99,7 @@ describe("GET /content", () => {
   });
 });
 
-describe("GET /content/:userID", () => {
+describe("GET /content/user/:userID", () => {
   it("should get contents assigned to a user", async () => {
     const loginResponse = await request(app)
       .post("/auth/login")
@@ -110,7 +110,7 @@ describe("GET /content/:userID", () => {
     const idToken = loginResponse.body.idToken;
 
     const response = await request(app)
-      .get(`/content/${process.env.ASSIGNED_USERID}`)
+      .get(`/content/user/${process.env.ASSIGNED_USERID}`)
       .set("Authorization", `Bearer ${idToken}`);
     console.log(response.body); // Add logging
     expect(response.status).toBe(200);
@@ -128,7 +128,7 @@ describe("GET /content/:userID", () => {
     const idToken = loginResponse.body.idToken;
 
     const response = await request(app)
-      .get(`/content/nonexistentUserID`)
+      .get(`/content/user/nonexistentUserID`)
       .set("Authorization", `Bearer ${idToken}`);
     console.log(response.body); // Add logging
     expect(response.status).toBe(404);

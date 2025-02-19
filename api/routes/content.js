@@ -13,7 +13,7 @@ const router = express();
 router.get("/", authenticate, async (req, res) => {
   getAllContents(req, res);
 });
-router.get("/:userID", authenticate, async (req, res) => {
+router.get("/user/:userID", authenticate, async (req, res) => {
   getUserAssignedContents(req, res);
 });
 router.get("/all/:status", authenticate, verifyRoles, async (req, res) => {
