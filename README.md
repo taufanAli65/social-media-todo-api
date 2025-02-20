@@ -73,12 +73,6 @@ Interactive API documentation is available at `http://localhost:your_app_port/ap
 - `PUT /content/`: Update content status (asigned user only)
 - `DELETE /content/:contentID`: Delete content (admin only)
 
-### On Development
-
-#### Content
-
-- `GET /content/due`: Get all contents that already due
-
 ## Running Tests
 
 Before running the test ensure to follow this step first :
