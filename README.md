@@ -1,6 +1,5 @@
 # Social Media ToDo API
 
-
 ## Project Overview
 
 A simple CRUD API for managing to-do list posts on social media. The API allows you to create, read, update, and delete tasks related to social media posts, including fields like Post Title, Brand, Platform, Due Date, Payment, and Status.
@@ -72,6 +71,64 @@ Interactive API documentation is available at `http://localhost:your_app_port/ap
 - `PUT /content/reassign`: Re-assign user to manage content (admin only)
 - `PUT /content/`: Update content status (assigned user only)
 - `DELETE /content/:contentID`: Delete content (admin only)
+
+## Request Body Requirements
+
+### Authentication
+
+#### `POST /auth/register`
+```json
+{
+  "email": "string",
+  "password": "string",
+  "name": "string"
+}
+```
+
+#### `POST /auth/login`
+```json
+{
+  "email": "string",
+  "password": "string"
+}
+```
+
+### Content
+
+#### `POST /content`
+```json
+{
+  "title": "string",
+  "brand": "string",
+  "platform": "string",
+  "payment": "number"
+}
+```
+
+#### `POST /content/assign`
+```json
+{
+  "userID": "string",
+  "contentID": "string"
+}
+```
+
+#### `PUT /content/reassign`
+```json
+{
+  "userID": "string",
+  "contentID": "string"
+}
+```
+
+#### `PUT /content/`
+```json
+{
+  "userID": "string",
+  "contentID": "string",
+  "status": "string"
+}
+```
 
 ## API Flow
 
