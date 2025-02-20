@@ -284,9 +284,7 @@ async function deleteContent(req, res) {
   try {
     const contentID = req.params.contentID;
     if (!contentID) {
-      throw new Error(
-        "Missing required fields: user ID, content ID, or status"
-      );
+      throw new Error("Missing required fields: content ID");
     }
     const contentResponse = await db
       .collection("contents")
@@ -316,8 +314,41 @@ async function deleteContent(req, res) {
   }
 } // delete content and update user assigned status to false
 
+async function getContentByID(req, res) {
+  try {
+    const contentID = req.params.contentID;
+    const userID = req.user.uid;
+    if (!contentID) {
+      throw new Error("Missing required fields: content ID");
+    }
+    const contentResponse = await db
+      .collection("contents")
+      .doc(contentID)
+      .get();
+    if (!contentResponse.exists) {
+      console.log("Content not found"); // Add logging
+      return res.status(404).json({ status: "Content not found" });
+    }
+    const contentData = contentResponse.data();
+    const userDoc = await db.collection("users").doc(req.user.uid).get();
+    if (!userDoc.exists) {
+      return res.status(404).json({ status: "User not found" });
+    }
+    const user = userDoc.data();
+    if (user.roles === "admin" || userID == contentData.assignedTo) {
+      return res.status(200).json({ status: "Success", content: contentData });
+    }
+    res.status(404).json({ status: "User not authorized to see this content" }); // if the user didn't met the criteria above
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: "Internal Server Error", error: error.message });
+  }
+} // get content with following ID
+
 module.exports = {
   getAllContents,
+  getContentByID,
   getUserAssignedContents,
   getUserContentsByStatus,
   addContent,

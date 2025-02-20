@@ -395,7 +395,7 @@ describe("PUT /content/", () => {
       status: "done"
     }); // Add detailed logging
     console.log("Response body:", response.body); // Add detailed logging
-    // expect(response.status).toBe(200);
+    expect(response.status).toBe(200);
     expect(response.body.status).toBe("Success");
   });
 
@@ -478,6 +478,43 @@ describe("PUT /content/", () => {
     console.log("Response body:", response.body); // Add detailed logging
     expect(response.status).toBe(404);
     expect(response.body.status).toBe("User not authorized to update this content");
+  });
+});
+
+describe("GET /content/:contentID", () => {
+  it("should get content by ID", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .get(`/content/${contentID}`)
+      .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe("Success");
+    expect(response.body.content).toHaveProperty("title");
+  });
+
+  it("should return an error if content does not exist", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .get(`/content/nonexistentContentID`)
+      .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("Content not found");
   });
 });
 

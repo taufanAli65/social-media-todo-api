@@ -3,6 +3,7 @@ const authenticate = require("../middleware/authenticate");
 const verifyRoles = require("../middleware/verifyRole");
 const {
   getAllContents,
+  getContentByID,
   getUserAssignedContents,
   getUserContentsByStatus,
   addContent,
@@ -38,6 +39,33 @@ const router = express();
  */
 router.get("/", authenticate, async (req, res) => {
   getAllContents(req, res);
+});
+
+/**
+ * @swagger
+ * /content/{contentID}:
+ *   get:
+ *     summary: Get content by ID
+ *     tags: [Content]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: contentID
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The content ID
+ *     responses:
+ *       200:
+ *         description: Success
+ *       404:
+ *         description: Content not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get("/:contentID", authenticate, async (req, res) => {
+  getContentByID(req, res);
 });
 
 /**
