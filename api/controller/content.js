@@ -346,11 +346,64 @@ async function getContentByID(req, res) {
   }
 } // get content with following ID
 
+async function getContentsByUserAndStatus(req, res) {
+  try {
+    const userID = req.params.userID;
+    const status = req.params.status;
+    let data =[];
+    if (!userID || !status) {
+      throw new Error("Missing required fields: User ID, status");
+    }
+    if (
+      status !== "done" &&
+      status !== "on-progress" &&
+      status !== "assigned" &&
+      status !== "unassigned"
+    ) {
+      return res.status(400).json({ status: "Invalid status parameter" });
+    }
+    const userResponse = await db
+      .collection("users")
+      .doc(userID)
+      .get();
+    if (!userResponse.exists) {
+      console.log("User not found"); // Add logging
+      return res.status(404).json({ status: "User not found" });
+    }
+    const userDoc = await db.collection("users").doc(req.user.uid).get();
+    const user = userDoc.data();
+    const userRoles = user.roles;
+    if (userRoles === "admin") {
+      const response = await db.collection("contents").get();
+      response.forEach((doc) => {
+        data.push({ id: doc.id, ...doc.data() });
+      }); // get all data if the user have admin roles
+    } else {
+      const response = await db
+        .collection("contents")
+        .where("assignedTo", "==", req.user.uid)
+        .get();
+      response.forEach((doc) => {
+        data.push({ id: doc.id, ...doc.data() });
+      }); // get user data if the user didn't have admin roles
+    }
+    if (data.length === 0) {
+      return res.status(404).json({ status: "No Contents" });
+    }
+    res.status(200).json({ status: "Success", contents: data });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: "Internal Server Error", error: error.message });
+  }
+} // get all contents managed or assigned to the user, sort by status (done, on-progress, assigned)
+
 module.exports = {
   getAllContents,
   getContentByID,
   getUserAssignedContents,
   getUserContentsByStatus,
+  getContentsByUserAndStatus,
   addContent,
   assignContent,
   reAssignContent,

@@ -6,6 +6,7 @@ const {
   getContentByID,
   getUserAssignedContents,
   getUserContentsByStatus,
+  getContentsByUserAndStatus,
   addContent,
   assignContent,
   reAssignContent,
@@ -151,6 +152,42 @@ router.get("/all/:status", authenticate, verifyRoles, async (req, res) => {
  *       500:
  *         description: Internal Server Error
  */
+
+/**
+ * @swagger
+ * /content/{userID}/{status}:
+ *   get:
+ *     summary: Get contents by user ID and status
+ *     tags: [Content]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userID
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The user ID
+ *       - in: path
+ *         name: status
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The content status
+ *     responses:
+ *       200:
+ *         description: Success
+ *       400:
+ *         description: Invalid status parameter
+ *       404:
+ *         description: User or Content not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get("/:userID/:status", authenticate, async (req, res) => {
+  getContentsByUserAndStatus(req, res);
+});
+
 router.post("/", authenticate, verifyRoles, async (req, res) => {
   addContent(req, res);
 });

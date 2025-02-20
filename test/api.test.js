@@ -518,6 +518,60 @@ describe("GET /content/:contentID", () => {
   });
 });
 
+describe("GET /content/:userID/:status", () => {
+  it("should get contents by user ID and status", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .get(`/content/${process.env.ASSIGNED_USERID}/done`)
+      .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe("Success");
+    expect(response.body.contents).toBeInstanceOf(Array);
+  });
+
+  it("should return an error for invalid status", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .get(`/content/${process.env.ASSIGNED_USERID}/invalid-status`)
+      .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(400);
+    expect(response.body.status).toBe("Invalid status parameter");
+  });
+
+  it("should return an error if user does not exist", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .get(`/content/nonexistentUserID/done`)
+      .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("User not found");
+  });
+});
+
 describe("DELETE /content/:contentID", () => {
   it("should delete a content", async () => {
     const loginResponse = await request(app)

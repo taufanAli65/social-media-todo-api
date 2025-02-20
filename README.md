@@ -65,18 +65,18 @@ Interactive API documentation is available at `http://localhost:your_app_port/ap
 - `GET /content`: Get all contents (admin only) and get all contents managed or assigned to the user (for user)
 - `GET /content/user/:userID`: Get all contents managed or assigned to the user
 - `GET /content/all/:status`: Get all contents, sort by status (done, on-progress, assigned, unassigned) (admin only)
+- `GET /content/:contentID`: Get spesific content
+- `GET /content/:userID/:status`: Get all contents managed or assigned to the user, sort by status (done, on-progress, assigned)
 - `POST /content`: Add new content (admin only)
 - `POST /content/assign`: Assign user to manage content (admin only)
 - `PUT /content/reassign`: Re-assign user to manage content (admin only)
 - `PUT /content/`: Update content status (asigned user only)
 - `DELETE /content/:contentID`: Delete content (admin only)
-- `GET /content/:contentID`: Get spesific content
 
 ### On Development
 
 #### Content
 
-- `GET /content/:userID/:status`: Get all contents managed or assigned to the user, sort by status (done, on-progress, assigned)
 - `GET /content/due`: Get all contents that already due
 
 ## Running Tests
