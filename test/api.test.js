@@ -481,6 +481,46 @@ describe("PUT /content/", () => {
   });
 });
 
+describe("DELETE /content/:contentID", () => {
+  it("should delete a content", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .delete(`/content/${contentID}`)
+      .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe("Success");
+    expect(response.body.message).toContain("deleted successfully");
+
+    const contentDoc = await db.collection("contents").doc(contentID).get();
+    expect(contentDoc.exists).toBe(false);
+  });
+
+  it("should return an error if content does not exist", async () => {
+    const loginResponse = await request(app)
+      .post("/auth/login")
+      .send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+      });
+    const idToken = loginResponse.body.idToken;
+
+    const response = await request(app)
+      .delete(`/content/nonexistentContentID`)
+      .set("Authorization", `Bearer ${idToken}`);
+    console.log(response.body); // Add logging
+    expect(response.status).toBe(404);
+    expect(response.body.status).toBe("Content not found");
+  });
+});
+
 afterAll(async () => {
   const response = await request(app)
       .post("/auth/login")

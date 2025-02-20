@@ -223,14 +223,12 @@ async function reAssignContent(req, res) {
       .status(500)
       .json({ status: "Internal Server Error", error: error.message });
   }
-}
+} // re-assign content to be managed by other user
 
 async function updateStatus(req, res) {
   try {
     const { userID, contentID, status } = req.body;
-    if (
-      !status || !userID || !contentID
-    ) {
+    if (!status || !userID || !contentID) {
       throw new Error(
         "Missing required fields: user ID, content ID, or status"
       );
@@ -241,9 +239,7 @@ async function updateStatus(req, res) {
       status !== "assigned" &&
       status !== "unassigned"
     ) {
-      throw new Error(
-        "Invalid status"
-      );
+      throw new Error("Invalid status");
     }
     const userResponse = await db.collection("users").doc(userID).get(); // check if the user exist
     if (!userResponse.exists) {
@@ -260,8 +256,12 @@ async function updateStatus(req, res) {
     }
     const contentData = contentResponse.data();
     if (userID !== contentData.assignedTo) {
-      console.log(`User ID ${userID} does not match the assigned user ID ${contentData.assignedTo}`); // Add logging
-      return res.status(404).json({ status: "User not authorized to update this content" });
+      console.log(
+        `User ID ${userID} does not match the assigned user ID ${contentData.assignedTo}`
+      ); // Add logging
+      return res
+        .status(404)
+        .json({ status: "User not authorized to update this content" });
     }
     await db.collection("contents").doc(contentID).set(
       {
@@ -278,7 +278,43 @@ async function updateStatus(req, res) {
       .status(500)
       .json({ status: "Internal Server Error", error: error.message });
   }
-}
+} // update status for content. Such us : done, on-progress, assigned, unassigned
+
+async function deleteContent(req, res) {
+  try {
+    const contentID = req.params.contentID;
+    if (!contentID) {
+      throw new Error(
+        "Missing required fields: user ID, content ID, or status"
+      );
+    }
+    const contentResponse = await db
+      .collection("contents")
+      .doc(contentID)
+      .get();
+    if (!contentResponse.exists) {
+      console.log("Content not found"); // Add logging
+      return res.status(404).json({ status: "Content not found" });
+    }
+    if (contentResponse.assignedTo) {
+      await db.collection.doc(contentResponse.assignedTo).set(
+        {
+          assigned: false,
+        },
+        { merge: true }
+      );
+    } // set the user to unassigned
+    await db.collection("contents").doc(contentID).delete();
+    res.status(200).json({
+      status: "Success",
+      message: `Content ID ${contentID} deleted successfully`,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: "Internal Server Error", error: error.message });
+  }
+} // delete content and update user assigned status to false
 
 module.exports = {
   getAllContents,
@@ -288,4 +324,5 @@ module.exports = {
   assignContent,
   reAssignContent,
   updateStatus,
+  deleteContent,
 };

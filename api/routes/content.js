@@ -9,6 +9,7 @@ const {
   assignContent,
   reAssignContent,
   updateStatus,
+  deleteContent,
 } = require("../controller/content");
 const router = express();
 
@@ -219,6 +220,31 @@ router.put("/reassign", authenticate, verifyRoles, async (req, res) => {
  */
 router.put("/", authenticate, async (req, res) => {
   updateStatus(req, res);
+});
+
+/**
+ * @swagger
+ * /content/{contentID}:
+ *   delete:
+ *     summary: Delete a content
+ *     tags: [Content]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: contentID
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The content ID
+ *     responses:
+ *       200:
+ *         description: Content deleted successfully
+ *       500:
+ *         description: Internal Server Error
+ */
+router.delete("/:contentID", authenticate, verifyRoles, async (req, res) => {
+  deleteContent(req, res);
 });
 
 module.exports = router;
