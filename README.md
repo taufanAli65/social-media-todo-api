@@ -30,7 +30,7 @@ A simple CRUD API for managing to-do list posts on social media. The API allows 
     FIREBASE_API_KEY=your_firebase_api_key
     ADMIN_EMAIL=your_admin_email
     ADMIN_PASSWORD=your_admin_password
-    APP_PORT=your_app_port
+    PORT=your_app_port
     ASSIGNED_USERID=assigned_userID_for_content
     ```
 
